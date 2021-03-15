@@ -1,0 +1,17 @@
+entity Book
+    [Id]
+    isbn: string
+    [OneToMany, Fetch=EAGER, Cascade=ALL]
+    author: Author
+    title: string
+    plural = 'Books'
+
+entity Author
+    [Id=AUTO, Length=15, Unique]
+    id: int
+    [Length=256, Max=5]
+    name: string
+    [NotNullable]
+    lastname: string
+    [ManyToOne]
+    books: Array<Book>

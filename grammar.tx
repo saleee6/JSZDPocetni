@@ -1,0 +1,91 @@
+EntityModel:
+    entities+=Entity
+;
+
+Entity:
+    'entity' name=ID properties+=Property (plural=Plural)?
+;
+
+Property:
+    SimpleProperty | RelationProperty
+;
+
+SimpleProperty:
+    ('[' constraints+=Constraint[','] ']')? name=ID ':' type=[SimpleType]
+;
+
+Constraint:
+    SimpleConstraint | ComplexConstraint
+;
+
+SimpleConstraint:
+    NoValueConstraint | IdConstraint
+;
+
+NoValueConstraint:
+    type = 'Unique' | type = 'NotNullable'
+;
+
+ComplexConstraint:
+    IdConstraint | IntegerConstraint
+;
+
+IdConstraint:
+    type='Id' ('=' value='AUTO')?
+;
+
+IntegerConstraint:
+    type=IntegerConstraintType '=' value=INT
+;
+
+IntegerConstraintType:
+    'Min' | 'Max' | 'Length'
+;
+
+RelationProperty:
+     '[' relation=Relation ']' name=ID ':' ((collectionType=CollectionType '<' type=[Entity] '>') | (type=[Entity]))
+;
+
+Relation:
+    type=RelationType (',' decorators+=RelationshipDecorator[','])?
+;
+
+RelationType:
+    'ManyToOne' | 'OneToMany' | 'ManyToMany' | 'OneToOne'
+;
+
+RelationshipDecorator:
+    CascadeDecorator | FetchDecorator | MappedByDecorator
+;
+
+CascadeDecorator:
+    type = 'Cascade' '=' (value = 'PERSIST' | value = 'MERGE' | value = 'REMOVE' | value = 'REFRESH' | value = 'DETACH' | value = 'ALL')
+;
+
+FetchDecorator:
+    type = 'Fetch' '=' (value = 'LAZY' | value = 'EAGER')
+;
+
+MappedByDecorator:
+    type = 'MappedBy' '=' value=STRING
+;
+
+SimpleType:
+    'type' name=ID
+;
+
+CollectionType:
+    type=CollectionTypeType
+;
+
+CollectionTypeType:
+    'Array' | 'List' | 'HashMap' | 'HashSet'
+;
+
+Plural:
+    'plural' '=' value=STRING
+;
+
+Comment:
+    /\/\/.*$/
+;
