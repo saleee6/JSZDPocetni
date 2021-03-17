@@ -1,5 +1,4 @@
 entity Book
-    [Id]
     isbn: string
     [OneToMany, Fetch=EAGER, Cascade=ALL]
     author: Author
@@ -7,11 +6,12 @@ entity Book
     plural = 'Books'
 
 entity Author
-    [Id=AUTO, Length=15, Unique]
-    id: int
-    [Length=256, Max=5]
+    [Length=13, Unique]
+    jmbg: string
+    [Length=256]
     name: string
     [NotNullable]
     lastname: string
     [ManyToOne]
     books: Array<Book>
+    book: Book

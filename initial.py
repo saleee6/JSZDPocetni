@@ -1,7 +1,10 @@
+from __future__ import unicode_literals
+import os
 from os import mkdir
 from os.path import exists, dirname, join
 import jinja2
 from textx import metamodel_from_file
+from textx.export import metamodel_export, model_export
 from datetime import datetime
 
 this_folder = dirname(__file__)
@@ -43,9 +46,14 @@ def main(debug=False):
         Maps type names from SimpleType to Java.
         """
         return {
-                'int': 'int',
                 'string': 'String'
         }.get(s.name, s.name)
+
+    def isSimpleType(s):
+        """
+        Check property type.
+        """
+        return isinstance(s, SimpleType)
 
     # Create the output folder
     srcgen_folder = join(this_folder, 'generated')
@@ -60,21 +68,22 @@ def main(debug=False):
 
     # Register the filter for mapping Entity type names to Java type names.
     jinja_env.filters['javatype'] = javatype
+    jinja_env.filters['isSimpleType'] = isSimpleType
 
     # Load the Java template
     template = jinja_env.get_template('entity.template')
 
     # Export to .dot file for visualization
-    #dot_folder = join(this_folder, 'dotexport')
-    #if not os.path.exists(dot_folder):
-    #    os.mkdir(dot_folder)
-    #metamodel_export(entity_mm, join(dot_folder, 'grammar_meta.dot'))
+    dot_folder = join(this_folder, 'dotexport')
+    if not os.path.exists(dot_folder):
+        os.mkdir(dot_folder)
+    metamodel_export(entity_mm, join(dot_folder, 'grammar_meta.dot'))
 
     # Izgradnja modela u odnosu na konkretan primer
     entity_model = entity_mm.model_from_file(join(this_folder, 'example.jszd'))
 
     # Kreiranje .dot fajla u odnosu na izgradjeni model
-    #model_export(example_model, join(dot_folder, 'example.dot'))
+    model_export(entity_model, join(dot_folder, 'example.dot'))
 
     # Generate Java code
     dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")

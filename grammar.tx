@@ -7,7 +7,7 @@ Entity:
 ;
 
 Property:
-    SimpleProperty | RelationProperty
+    RelationProperty | SimpleProperty
 ;
 
 SimpleProperty:
@@ -15,35 +15,19 @@ SimpleProperty:
 ;
 
 Constraint:
-    SimpleConstraint | ComplexConstraint
-;
-
-SimpleConstraint:
-    NoValueConstraint | IdConstraint
-;
-
-NoValueConstraint:
-    type = 'Unique' | type = 'NotNullable'
-;
-
-ComplexConstraint:
-    IdConstraint | IntegerConstraint
-;
-
-IdConstraint:
-    type='Id' ('=' value='AUTO')?
-;
-
-IntegerConstraint:
-    type=IntegerConstraintType '=' value=INT
-;
-
-IntegerConstraintType:
-    'Min' | 'Max' | 'Length'
+    type = 'Unique' | type = 'NotNullable' | type='Length' '=' value=INT
 ;
 
 RelationProperty:
-     '[' relation=Relation ']' name=ID ':' ((collectionType=CollectionType '<' type=[Entity] '>') | (type=[Entity]))
+     SimpleRelationProperty | ComplexRelationProperty
+;
+
+SimpleRelationProperty:
+    name=ID ':' type=[Entity]
+;
+
+ComplexRelationProperty:
+    '[' relation=Relation ']' name=ID ':' ((collectionType=CollectionType '<' type=[Entity] '>') | (type=[Entity]))
 ;
 
 Relation:
@@ -55,7 +39,7 @@ RelationType:
 ;
 
 RelationshipDecorator:
-    CascadeDecorator | FetchDecorator | MappedByDecorator
+    CascadeDecorator | FetchDecorator
 ;
 
 CascadeDecorator:
@@ -64,10 +48,6 @@ CascadeDecorator:
 
 FetchDecorator:
     type = 'Fetch' '=' (value = 'LAZY' | value = 'EAGER')
-;
-
-MappedByDecorator:
-    type = 'MappedBy' '=' value=STRING
 ;
 
 SimpleType:
