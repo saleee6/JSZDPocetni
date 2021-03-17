@@ -13,5 +13,4 @@ entity Author
     [NotNullable]
     lastname: string
     [ManyToOne]
-    books: Array<Book>
-    book: Book
+    books: Set<Book>

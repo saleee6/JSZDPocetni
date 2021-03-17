@@ -7,7 +7,7 @@ Entity:
 ;
 
 Property:
-    RelationProperty | SimpleProperty
+    SimpleProperty | RelationProperty
 ;
 
 SimpleProperty:
@@ -19,7 +19,7 @@ Constraint:
 ;
 
 RelationProperty:
-     SimpleRelationProperty | ComplexRelationProperty
+    SimpleRelationProperty | ComplexRelationProperty
 ;
 
 SimpleRelationProperty:
@@ -59,7 +59,7 @@ CollectionType:
 ;
 
 CollectionTypeType:
-    'Array' | 'List' | 'HashMap' | 'HashSet'
+    'List' | 'Set'
 ;
 
 Plural:
