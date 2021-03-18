@@ -1,0 +1,75 @@
+
+    digraph textX {
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+    node[
+        shape=record,
+        style=filled,
+        fillcolor=aliceblue
+    ]
+    nodesep = 0.3
+    edge[dir=black,arrowtail=empty]
+
+
+1652984453392[ label="{EntityModel|}"]
+
+1652984455280[ label="{Entity|name: ID\l}"]
+
+1652984460000[ label="{*Property|}"]
+
+1652984466608[ label="{SimpleProperty|name: ID\l}"]
+
+1652984467552[ label="{Constraint|type: STRING\lvalue: INT\l}"]
+
+1652984476992[ label="{*RelationProperty|}"]
+
+1652984461888[ label="{SimpleRelationProperty|name: ID\l}"]
+
+1652984454336[ label="{ComplexRelationProperty|name: ID\l}"]
+
+1652984480768[ label="{Relation|type: RelationType\l}"]
+
+1652984457168[ label="{*RelationshipDecorator|}"]
+
+1652984490208[ label="{CascadeDecorator|type: STRING\lvalue: STRING\l}"]
+
+1652984459056[ label="{FetchDecorator|type: STRING\lvalue: STRING\l}"]
+
+1652984427904[ label="{SimpleType|name: ID\l}"]
+
+1652984462832[ label="{CollectionType|type: CollectionTypeType\l}"]
+
+1652984499648[ label="{Plural|value: STRING\l}"]
+
+
+
+1652984453392 -> 1652984455280[arrowtail=diamond, dir=both, headlabel="entities 1..*"]
+1652984455280 -> 1652984460000[arrowtail=diamond, dir=both, headlabel="properties 1..*"]
+1652984455280 -> 1652984499648[arrowtail=diamond, dir=both, headlabel="plural "]
+1652984460000 -> 1652984466608 [dir=back]
+1652984460000 -> 1652984476992 [dir=back]
+1652984466608 -> 1652984467552[arrowtail=diamond, dir=both, headlabel="constraints 1..*"]
+1652984466608 -> 1652984427904[headlabel="type "]
+1652984476992 -> 1652984461888 [dir=back]
+1652984476992 -> 1652984454336 [dir=back]
+1652984461888 -> 1652984455280[headlabel="type "]
+1652984454336 -> 1652984480768[arrowtail=diamond, dir=both, headlabel="relation "]
+1652984454336 -> 1652984462832[arrowtail=diamond, dir=both, headlabel="collectionType "]
+1652984454336 -> 1652984455280[headlabel="type "]
+1652984480768 -> 1652984457168[arrowtail=diamond, dir=both, headlabel="decorators 1..*"]
+1652984457168 -> 1652984490208 [dir=back]
+1652984457168 -> 1652984459056 [dir=back]
+match_rules [ shape=plaintext, label=< <table>
+	<tr>
+		<td><b>CollectionTypeType</b></td><td>List|Set</td>
+	</tr>
+	<tr>
+		<td><b>Comment</b></td><td>\/\/.*$</td>
+	</tr>
+	<tr>
+		<td><b>RelationType</b></td><td>ManyToOne|OneToMany|ManyToMany|OneToOne</td>
+	</tr>
+</table> >]
+
+
+}

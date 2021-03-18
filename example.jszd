@@ -1,6 +1,6 @@
 entity Book
     isbn: string
-    [OneToMany, Fetch=EAGER, Cascade=ALL]
+    [ManyToOne, Fetch=EAGER, Cascade=ALL]
     author: Author
     title: string
     plural = 'Books'
@@ -12,5 +12,5 @@ entity Author
     name: string
     [NotNullable]
     lastname: string
-    [ManyToOne]
+    [OneToMany]
     books: Set<Book>
