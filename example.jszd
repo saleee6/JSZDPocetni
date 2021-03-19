@@ -1,16 +1,20 @@
-entity Book
-    isbn: string
-    [ManyToOne, Fetch=EAGER, Cascade=ALL]
-    author: Author
-    title: string
-    plural = 'Books'
-
-entity Author
-    [Length=13, Unique]
+entity Human
+    [Unique, Length=13]
     jmbg: string
     [Length=256]
     name: string
-    [NotNullable]
+    [Length=256]
     lastname: string
-    [OneToMany]
-    books: Set<Book>
+    [ManyToMany]
+    dogs: Set<Dog>
+
+entity Dog
+    [Length=256]
+    name: string
+    breed: string
+    tramp: bool
+    age: int
+    weight: float
+    [ManyToMany]
+    human: List<Human>
+    plural = 'Kere'

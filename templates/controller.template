@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/api/{{entity.name|uncapitalize}}")
+@RequestMapping("/api/{% if entity.plural %}{{entity.plural.value|uncapitalize}}{% else %}{{entity.name|uncapitalize}}s{% endif %}")
 public class {% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}Controller {
 
     @Autowired

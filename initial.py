@@ -3,7 +3,7 @@ import os
 from os import mkdir
 from os.path import exists, dirname, join
 import jinja2
-from textx import metamodel_from_file
+from textx import metamodel_from_file, TextXSemanticError
 from textx.export import metamodel_export, model_export
 from datetime import datetime
 from distutils.dir_util import copy_tree
@@ -30,6 +30,34 @@ class SimpleType(object):
     def __str__(self):
         return self.name
 
+def relation_validator(property):
+    if property.relation.type in ['ManyToOne','OneToOne'] and property.collectionType:
+        raise TextXSemanticError('Relations ManyToOne and OneToOne can not be of type collection')
+
+    if property.relation.type in ['OneToMany','ManyToMany'] and not property.collectionType:
+        raise TextXSemanticError('Relations OneToMany and ManyToMany must be of type collection')
+
+def decorator_validator(relation):
+    if len(relation.decorators) != 0:
+        for i in range(len(relation.decorators)):
+            for j in range(i+1, len(relation.decorators)):
+                if relation.decorators[i].type == relation.decorators[j].type:
+                    raise TextXSemanticError('Can not have multiple decorators of the same type')
+
+def constraint_validator(property):
+    if len(property.constraints) != 0:
+        for i in range(len(property.constraints)):
+            for j in range(i+1, len(property.constraints)):
+                if property.constraints[i].type == property.constraints[j].type:
+                    raise TextXSemanticError('Can not have multiple constraints of the same type')
+
+def length_constraint_validator(property):
+    if len(property.constraints) != 0:
+        for i in range(len(property.constraints)):
+            if property.constraints[i].type == 'Length' and property.type.name != 'string':
+                raise TextXSemanticError('Length constraint can only be set on property of type string')
+
+
 def get_entity_mm(debug=False):
     """
     Builds and returns a meta-model for Entity language.
@@ -41,10 +69,19 @@ def get_entity_mm(debug=False):
         'float': SimpleType(None, 'float')
     }
 
+    object_processors = {
+        'ComplexRelationProperty' : relation_validator,
+        'SimpleProperty' : constraint_validator,
+        'SimpleProperty' : length_constraint_validator,
+        'Relation' : decorator_validator
+    }
+
     metamodel = metamodel_from_file(grammar_path,
                                     classes=[SimpleType],
                                     builtins=type_builtins,
                                     debug=debug)
+
+    metamodel.register_obj_processors(object_processors)
 
     return metamodel
 
