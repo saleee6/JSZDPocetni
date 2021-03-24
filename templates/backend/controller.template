@@ -10,8 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/api/{% if entity.plural %}{{entity.plural.value|uncapitalize}}{% else %}{{entity.name|uncapitalize}}s{% endif %}")
-public class {% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}Controller {
+@RequestMapping("/api/{{entity|return_plural|uncapitalize}}")
+public class {{entity|return_plural|capitalize}}Controller {
 
     @Autowired
     private {{entity.name|capitalize}}Service {{entity.name|uncapitalize}}Service;
@@ -22,8 +22,8 @@ public class {% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{
     }
 
     @GetMapping(value="/getAll", produces = "application/json")
-    public ResponseEntity<?> getAll{% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}() {
-        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.getAll{% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}(), HttpStatus.OK);
+    public ResponseEntity<?> getAll{{entity|return_plural|capitalize}}() {
+        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.getAll{{entity|return_plural|capitalize}}(), HttpStatus.OK);
     }
 
     @PostMapping(value="/add", consumes = "application/json")

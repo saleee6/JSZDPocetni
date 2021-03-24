@@ -10,17 +10,38 @@ from distutils.dir_util import copy_tree
 import shutil
 
 this_folder = dirname(__file__)
+base_folder = join(this_folder, 'project')
+generarted_folder = join(this_folder, 'generated')
 grammar_path = join(this_folder, 'grammar.tx')
 template_folder = join(this_folder, 'templates')
-base_folder = join(this_folder, 'project')
-project_folder = join(base_folder, 'demo')
-project_base_generated = join(project_folder,'src','main','java','com','example','demo','generated')
 
-interfaces_folder = join(project_base_generated,'interfaces')
-controllers_folder = join(project_base_generated,'controllers')
-repositories_folder = join(project_base_generated,'repositories')
-services_folder = join(project_base_generated,'services')
-models_folder = join(project_base_generated,'models')
+#region Backend Folders
+backend_folder = join(base_folder, 'demo')
+backend_base_folder = join(backend_folder,'src','main','java','com','example','demo','generated')
+
+backend_interface_folder = join(backend_base_folder,'interfaces')
+controllers_folder = join(backend_base_folder,'controllers')
+repositories_folder = join(backend_base_folder,'repositories')
+backend_service_folder = join(backend_base_folder,'services')
+models_folder = join(backend_base_folder,'models')
+#endregion
+
+#region Frontend Folders
+frontend_folder = join(base_folder, 'demo-app')
+frontend_base_folder = join(frontend_folder, 'src')
+
+frontend_interface_folder = join(frontend_base_folder,'interfaces')
+components_folder = join(frontend_base_folder,'components')
+containers_folder = join(frontend_base_folder,'containers')
+frontend_service_folder = join(frontend_base_folder,'services')
+types_folder = join(frontend_base_folder,'types')
+
+generated_frontend_interface_folder = join(frontend_interface_folder,'generated')
+generated_components_folder = join(components_folder,'generated')
+generated_containers_folder = join(containers_folder,'generated')
+generated_frontend_service_folder = join(frontend_service_folder,'generated')
+generated_types_folder = join(types_folder,'generated')
+#endregion
 
 class SimpleType(object):
     def __init__(self, parent, name):
@@ -98,6 +119,16 @@ def main(debug=False):
                 'bool': 'boolean'
         }.get(s.name, s.name)
 
+    def jstype(s):
+        """
+        Maps type names from SimpleType to JavaScript.
+        """
+        return {
+                'bool': 'boolean',
+                'int': 'number',
+                'float': 'number'
+        }.get(s.name, s.name)
+
     def isSimpleType(s):
         """
         Check property type.
@@ -110,23 +141,43 @@ def main(debug=False):
         """
         return s[0].lower() + s[1:]
 
+    def return_plural(e):
+        """
+        Return plural of name.
+        """
+        if e.plural:
+            return e.plural.value
+        else:
+            return e.name + 's'
+
+    def isRequired(p):
+        """
+        Check if property is required.
+        """
+        for constraint in p.constraints:
+            if constraint.type == 'NotNullable':
+                return True
+        return False
+
     # Create the output folder
-    
+
+    # Project
     if not exists(base_folder):
         mkdir(base_folder)
 
-    if not exists(project_folder):
-        mkdir(project_folder)
-        copy_tree(join(this_folder, 'demo'), project_folder)
+    #region Project/demo
+    if not exists(backend_folder):
+        mkdir(backend_folder)
+        copy_tree(join(this_folder, 'demo'), backend_folder)
 
-    if not exists(project_base_generated):
-        mkdir(project_base_generated)
+    if not exists(backend_base_folder):
+        mkdir(backend_base_folder)
     else:
-        shutil.rmtree(project_base_generated)
-        mkdir(project_base_generated)
+        shutil.rmtree(backend_base_folder)
+        mkdir(backend_base_folder)
 
-    if not exists(services_folder):
-        mkdir(services_folder)
+    if not exists(backend_service_folder):
+        mkdir(backend_service_folder)
 
     if not exists(repositories_folder):
         mkdir(repositories_folder)
@@ -134,29 +185,103 @@ def main(debug=False):
     if not exists(models_folder):
         mkdir(models_folder)
 
-    if not exists(interfaces_folder):
-        mkdir(interfaces_folder)
+    if not exists(backend_interface_folder):
+        mkdir(backend_interface_folder)
 
     if not exists(controllers_folder):
         mkdir(controllers_folder)
+    #endregion
 
-    # Initialize the template engine.
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(template_folder),
+    #region Project/demo-app
+    if not exists(frontend_folder):
+        mkdir(frontend_folder)
+        copy_tree(join(this_folder, 'demo-app'), frontend_folder)
+
+    if not exists(frontend_interface_folder):
+        mkdir(frontend_interface_folder)
+
+    if not exists(generated_frontend_interface_folder):
+        mkdir(generated_frontend_interface_folder)
+    else:
+        shutil.rmtree(generated_frontend_interface_folder)
+        mkdir(generated_frontend_interface_folder)
+
+    if not exists(components_folder):
+        mkdir(components_folder)
+
+    if not exists(generated_components_folder):
+        mkdir(generated_components_folder)
+    else:
+        shutil.rmtree(generated_components_folder)
+        mkdir(generated_components_folder)
+
+    if not exists(containers_folder):
+        mkdir(containers_folder)
+
+    if not exists(generated_containers_folder):
+        mkdir(generated_containers_folder)
+    else:
+        shutil.rmtree(generated_containers_folder)
+        mkdir(generated_containers_folder)
+
+    if not exists(frontend_service_folder):
+        mkdir(frontend_service_folder)
+
+    if not exists(generated_frontend_service_folder):
+        mkdir(generated_frontend_service_folder)
+    else:
+        shutil.rmtree(generated_frontend_service_folder)
+        mkdir(generated_frontend_service_folder)
+
+    if not exists(types_folder):
+        mkdir(types_folder)
+
+    if not exists(generated_types_folder):
+        mkdir(generated_types_folder)
+    else:
+        shutil.rmtree(generated_types_folder)
+        mkdir(generated_types_folder)
+    #endregion
+
+    # Template engine for backend
+    jinja_backend_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(join(template_folder, 'backend')),
         trim_blocks=True,
         lstrip_blocks=True)
 
-    # Register the filter for mapping Entity type names to Java type names.
-    jinja_env.filters['javatype'] = javatype
-    jinja_env.filters['isSimpleType'] = isSimpleType
-    jinja_env.filters['uncapitalize'] = uncapitalize
+    # Template engine for frontend
+    jinja_frontend_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(join(template_folder, 'frontend')),
+        trim_blocks=True,
+        lstrip_blocks=True)
 
-    # Load the Java templates
-    entity_template = jinja_env.get_template('entity.template')
-    repository_template = jinja_env.get_template('repository.template')
-    interface_template = jinja_env.get_template('interface.template')
-    service_template = jinja_env.get_template('service.template')
-    controller_template = jinja_env.get_template('controller.template')
+    # Register filters for backend engine
+    jinja_backend_env.filters['javatype'] = javatype
+    jinja_backend_env.filters['isSimpleType'] = isSimpleType
+    jinja_backend_env.filters['uncapitalize'] = uncapitalize
+    jinja_backend_env.filters['return_plural'] = return_plural
+
+    # Register filters for frontend engine
+    jinja_frontend_env.filters['jstype'] = jstype
+    jinja_frontend_env.filters['isSimpleType'] = isSimpleType
+    jinja_frontend_env.filters['uncapitalize'] = uncapitalize
+    jinja_frontend_env.filters['return_plural'] = return_plural
+    jinja_frontend_env.filters['isRequired'] = isRequired
+
+    # Load the Java templates for backend
+    entity_template = jinja_backend_env.get_template('entity.template')
+    repository_template = jinja_backend_env.get_template('repository.template')
+    interface_backend_template = jinja_backend_env.get_template('interface.template')
+    service_backend_template = jinja_backend_env.get_template('service.template')
+    controller_template = jinja_backend_env.get_template('controller.template')
+
+    # Load the Java templates for frontend
+    navbar_template = jinja_frontend_env.get_template('navbar.template')
+    preview_template = jinja_frontend_env.get_template('preview.template')
+    types_template = jinja_frontend_env.get_template('types.template')
+    interface_frontend_template = jinja_frontend_env.get_template('interface.template')
+    popup_template = jinja_frontend_env.get_template('popup.template')
+    service_frontend_template = jinja_frontend_env.get_template('service.template')
 
     # Export to .dot file for visualization
     dot_folder = join(this_folder, 'dotexport')
@@ -172,6 +297,13 @@ def main(debug=False):
 
     # Generate Java code
     dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    with open(join(generated_components_folder,
+                      "NavBar.tsx"), 'w') as f:
+            f.write(navbar_template.render(entities=entity_model.entities, time=dt_string))
+    with open(join(generated_types_folder,
+                      "Types.ts"), 'w') as f:
+            f.write(types_template.render(entities=entity_model.entities, time=dt_string))
+
     for entity in entity_model.entities:
         # For each entity generate java file
         with open(join(models_folder,
@@ -180,15 +312,27 @@ def main(debug=False):
         with open(join(repositories_folder,
                       "%sRepository.java" % entity.name.capitalize()), 'w') as f:
             f.write(repository_template.render(entity=entity, time=dt_string))
-        with open(join(interfaces_folder,
+        with open(join(backend_interface_folder,
                       "%sInterface.java" % entity.name.capitalize()), 'w') as f:
-            f.write(interface_template.render(entity=entity, time=dt_string))
-        with open(join(services_folder,
+            f.write(interface_backend_template.render(entity=entity, time=dt_string))
+        with open(join(backend_service_folder,
                       "%sService.java" % entity.name.capitalize()), 'w') as f:
-            f.write(service_template.render(entity=entity, time=dt_string))
+            f.write(service_backend_template.render(entity=entity, time=dt_string))
         with open(join(controllers_folder,
                       "%sController.java" % (entity.plural.value.capitalize() if entity.plural else (entity.name.capitalize() + 's'))), 'w') as f:
             f.write(controller_template.render(entity=entity, time=dt_string))
+        with open(join(generated_containers_folder,
+                      "%s.tsx" % (entity.plural.value.capitalize() if entity.plural else (entity.name.capitalize() + 's'))), 'w') as f:
+            f.write(preview_template.render(entity=entity, time=dt_string))
+        with open(join(generated_frontend_interface_folder,
+                      "I%sPopup.ts" % entity.name.capitalize()), 'w') as f:
+            f.write(interface_frontend_template.render(entity=entity, time=dt_string))
+        with open(join(generated_components_folder,
+                      "%sPopup.tsx" % entity.name.capitalize()), 'w') as f:
+            f.write(popup_template.render(entity=entity, time=dt_string))
+        with open(join(generated_frontend_service_folder,
+                      "%sService.ts" % entity.name.capitalize()), 'w') as f:
+            f.write(service_frontend_template.render(entity=entity, time=dt_string))
 
 
 if __name__ == "__main__":

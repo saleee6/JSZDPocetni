@@ -21,7 +21,7 @@ public class {{entity.name|capitalize}}Service implements {{entity.name|capitali
     }
 
     @Override
-    public ArrayList<{{entity.name|capitalize}}> getAll{% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}() {
+    public ArrayList<{{entity.name|capitalize}}> getAll{{entity|return_plural|capitalize}}() {
         return (ArrayList<{{entity.name|capitalize}}>){{entity.name|uncapitalize}}Repository.findAll();
     }
 

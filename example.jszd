@@ -1,5 +1,5 @@
 entity Human
-    [Unique, Length=13]
+    [Unique, Length=13, NotNullable]
     jmbg: string
     [Length=256]
     name: string
@@ -16,5 +16,4 @@ entity Dog
     age: int
     weight: float
     [ManyToMany]
-    human: List<Human>
-    plural = 'Kere'
+    humans: List<Human>

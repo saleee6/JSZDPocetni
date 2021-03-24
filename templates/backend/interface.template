@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public interface {{entity.name|capitalize}}Interface {
     {{entity.name|capitalize}} get{{entity.name|capitalize}}(Long id);
-    ArrayList<{{entity.name|capitalize}}> getAll{% if entity.plural %}{{entity.plural.value|capitalize}}{% else %}{{entity.name|capitalize}}s{% endif %}();
+    ArrayList<{{entity.name|capitalize}}> getAll{{entity|return_plural|capitalize}}();
     {{entity.name|capitalize}} store{{entity.name|capitalize}}({{entity.name|capitalize}} {{entity.name|uncapitalize}});
     void delete{{entity.name|capitalize}}(Long id);
 }
