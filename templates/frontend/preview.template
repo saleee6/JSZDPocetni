@@ -54,7 +54,8 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   const handleOnAddSubmit = (value: types.{{entity.name|capitalize}}) => {
     add{{entity.name|capitalize}}(value).then(
       response => {
-        setEditedList(!setEditedList);
+        setEditedList(!editedList);
+        setOpenedAdd(false);
       },
       error => {
         console.log(error);
@@ -65,7 +66,19 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   const handleOnEditSubmit = (value: types.{{entity.name|capitalize}}) => {
     update{{entity.name|capitalize}}(value).then(
       response => {
-        setEditedList(!setEditedList);
+        setEditedList(!editedList);
+        setOpenedEdit(false);
+      },
+      error => {
+        console.log(error);
+      }
+    )
+  };
+
+  const handleOnDelete = (id: number) => {
+    delete{{entity.name|capitalize}}(id).then(
+      response => {
+        setEditedList(!editedList);
       },
       error => {
         console.log(error);
@@ -172,6 +185,7 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
                       {% endfor %}
                       <TableCell>
                         <Button onClick={() => handleOnEdit({{entity.name|uncapitalize}})}>Edit</Button>
+                        <Button onClick={() => handleOnDelete({{entity.name|uncapitalize}}.id)}>Delete</Button>
                       </TableCell>
                     </TableRow>
                   );

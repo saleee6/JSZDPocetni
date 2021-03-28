@@ -24,6 +24,7 @@ controllers_folder = join(backend_base_folder,'controllers')
 repositories_folder = join(backend_base_folder,'repositories')
 backend_service_folder = join(backend_base_folder,'services')
 models_folder = join(backend_base_folder,'models')
+dtos_folder = join(backend_base_folder,'dtos')
 #endregion
 
 #region Frontend Folders
@@ -51,6 +52,7 @@ class SimpleType(object):
     def __str__(self):
         return self.name
 
+#region Validators
 def relation_validator(property):
     if property.relation.type in ['ManyToOne','OneToOne'] and property.collectionType:
         raise TextXSemanticError('Relations ManyToOne and OneToOne can not be of type collection')
@@ -77,7 +79,7 @@ def length_constraint_validator(property):
         for i in range(len(property.constraints)):
             if property.constraints[i].type == 'Length' and property.type.name != 'string':
                 raise TextXSemanticError('Length constraint can only be set on property of type string')
-
+#endregion
 
 def get_entity_mm(debug=False):
     """
@@ -110,6 +112,7 @@ def main(debug=False):
 
     entity_mm = get_entity_mm(debug)
 
+    #region Filters
     def javatype(s):
         """
         Maps type names from SimpleType to Java.
@@ -158,6 +161,7 @@ def main(debug=False):
             if constraint.type == 'NotNullable':
                 return True
         return False
+    #endregion
 
     # Create the output folder
 
@@ -190,6 +194,9 @@ def main(debug=False):
 
     if not exists(controllers_folder):
         mkdir(controllers_folder)
+    
+    if not exists(dtos_folder):
+        mkdir(dtos_folder)
     #endregion
 
     #region Project/demo-app
@@ -274,6 +281,7 @@ def main(debug=False):
     interface_backend_template = jinja_backend_env.get_template('interface.template')
     service_backend_template = jinja_backend_env.get_template('service.template')
     controller_template = jinja_backend_env.get_template('controller.template')
+    dtos_template = jinja_backend_env.get_template('dto.template')
 
     # Load the Java templates for frontend
     navbar_template = jinja_frontend_env.get_template('navbar.template')
@@ -321,6 +329,9 @@ def main(debug=False):
         with open(join(controllers_folder,
                       "%sController.java" % (entity.plural.value.capitalize() if entity.plural else (entity.name.capitalize() + 's'))), 'w') as f:
             f.write(controller_template.render(entity=entity, time=dt_string))
+        with open(join(dtos_folder,
+                      "%sDTO.java" % entity.name.capitalize()), 'w') as f:
+            f.write(dtos_template.render(entity=entity, time=dt_string))
         with open(join(generated_containers_folder,
                       "%s.tsx" % (entity.plural.value.capitalize() if entity.plural else (entity.name.capitalize() + 's'))), 'w') as f:
             f.write(preview_template.render(entity=entity, time=dt_string))

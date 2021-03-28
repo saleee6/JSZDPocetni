@@ -15,6 +15,7 @@ import {
   Select,
   Switch,
   TextField,
+  FormHelperText,
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import React, { VFC } from "react";
@@ -25,13 +26,10 @@ import * as types from "../../types/generated/Types";
 const validationSchema = yup.object({
   {% for property in entity.properties %}
   {% if property.type|isSimpleType %}
-  {{property.name}}: yup.{{property.type|jstype}}(){% for constraint in property.constraints %}{% if constraint.type=='Length' %}.length({{constraint.value}},'Property {{property.name}} must be {{constraint.value}} characters long'){% endif %}{% endfor %},
+  {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{% if constraint.type=='Length' %}.length({{constraint.value}},'Property {{property.name}} must be {{constraint.value}} characters long'){% endif %}{% endfor %},
   {% else %}
   {{property.name}}: {% if not property.collectionType %}yup.number(),{% else %}yup.array().of(
-    yup.object().shape({
-      id: yup.number(),
-    })
-  ),{% endif %}
+    yup.number(),){% endif %}
   {% endif %}
   {% endfor %}
 });
@@ -65,7 +63,7 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
       {% if property.type|isSimpleType %}
       {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if property.type.name == 'string' %}''{% elif property.type.name == 'bool' %}false{% else %}undefined{% endif %},
       {% else %}
-      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if not property.collectionType %}null,{% else %}[],{% endif %}
+      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if not property.collectionType %}undefined,{% else %}[],{% endif %}
 
       {% endif %}
       {% endfor %}
@@ -139,14 +137,14 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
                     <Select
                     value={formik.values.{{property.name}} }
                     onChange={formik.handleChange}
+                    name="{{property.name}}"
                     >
-                    <MenuItem value="">
+                    <MenuItem value={0}>
                         <em>None</em>
                     </MenuItem>
                     { {{property.type|return_plural|uncapitalize}}.map(({{property.type.name|uncapitalize}}) => (
-                        <MenuItem key={ {{property.type|uncapitalize}}.id} value={ {{property.type|uncapitalize}}.id}>
-                        <Checkbox checked={formik.values.{{property.name}}.includes({{property.type|uncapitalize}}.id)} />
-                        <ListItemText primary={ {{property.type.name|uncapitalize}}.id} />
+                        <MenuItem key={ {{property.type.name|uncapitalize}}.id} value={ {{property.type.name|uncapitalize}}.id}>
+                        { {{property.type.name|uncapitalize}}.id}
                         </MenuItem>
                     ))}
                     </Select>

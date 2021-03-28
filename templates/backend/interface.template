@@ -2,12 +2,13 @@
 package com.example.demo.generated.interfaces;
 
 import com.example.demo.generated.models.{{entity.name|capitalize}};
+import com.example.demo.generated.dtos.{{entity.name|capitalize}}DTO;
 
 import java.util.ArrayList;
 
 public interface {{entity.name|capitalize}}Interface {
-    {{entity.name|capitalize}} get{{entity.name|capitalize}}(Long id);
-    ArrayList<{{entity.name|capitalize}}> getAll{{entity|return_plural|capitalize}}();
-    {{entity.name|capitalize}} store{{entity.name|capitalize}}({{entity.name|capitalize}} {{entity.name|uncapitalize}});
+    {{entity.name|capitalize}}DTO get{{entity.name|capitalize}}(Long id);
+    ArrayList<{{entity.name|capitalize}}DTO> getAll{{entity|return_plural|capitalize}}();
+    {{entity.name|capitalize}}DTO store{{entity.name|capitalize}}({{entity.name|capitalize}}DTO {{entity.name|uncapitalize}}DTO);
     void delete{{entity.name|capitalize}}(Long id);
 }

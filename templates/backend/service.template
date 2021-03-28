@@ -2,8 +2,9 @@
 package com.example.demo.generated.services;
 
 import com.example.demo.generated.interfaces.{{entity.name|capitalize}}Interface;
-import com.example.demo.generated.models.{{entity.name|capitalize}};
-import com.example.demo.generated.repositories.{{entity.name|capitalize}}Repository;
+import com.example.demo.generated.models.*;
+import com.example.demo.generated.dtos.*;
+import com.example.demo.generated.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,19 +16,43 @@ public class {{entity.name|capitalize}}Service implements {{entity.name|capitali
     @Autowired
     private {{entity.name|capitalize}}Repository {{entity.name|uncapitalize}}Repository;
 
+    {% for property in entity.properties %}
+    {% if not property.type|isSimpleType %}
+    @Autowired
+    private {{property.type.name|capitalize}}Repository {{property.type.name|uncapitalize}}Repository;
+    {% endif %}
+    {% endfor %}
+
     @Override
-    public {{entity.name|capitalize}} get{{entity.name|capitalize}}(Long id) {
-        return {{entity.name|uncapitalize}}Repository.get{{entity.name|capitalize}}ById(id);
+    public {{entity.name|capitalize}}DTO get{{entity.name|capitalize}}(Long id) {
+        return {{entity.name|uncapitalize}}Repository.get{{entity.name|capitalize}}ById(id).toDTO();
     }
 
     @Override
-    public ArrayList<{{entity.name|capitalize}}> getAll{{entity|return_plural|capitalize}}() {
-        return (ArrayList<{{entity.name|capitalize}}>){{entity.name|uncapitalize}}Repository.findAll();
+    public ArrayList<{{entity.name|capitalize}}DTO> getAll{{entity|return_plural|capitalize}}() {
+        ArrayList<{{entity.name|capitalize}}DTO> list = new ArrayList<>();
+        ArrayList<{{entity.name|capitalize}}> tempList = (ArrayList<{{entity.name|capitalize}}>){{entity.name|uncapitalize}}Repository.findAll();
+        tempList.forEach({{entity.name|uncapitalize}} -> {
+            list.add({{entity.name|uncapitalize}}.toDTO());
+        });
+        return list;
     }
 
     @Override
-    public {{entity.name|capitalize}} store{{entity.name|capitalize}}({{entity.name|capitalize}} {{entity.name|uncapitalize}}) {
-        return {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}});
+    public {{entity.name|capitalize}}DTO store{{entity.name|capitalize}}({{entity.name|capitalize}}DTO {{entity.name|uncapitalize}}DTO) {
+        {{entity.name|capitalize}} {{entity.name|uncapitalize}} = new {{entity.name|capitalize}}({{entity.name|uncapitalize}}DTO.getId(), {% for n in range(entity.properties|length) %}
+    {% if entity.properties[n].type|isSimpleType %}
+    {{entity.name|uncapitalize}}DTO.{% if entity.properties[n].type|javatype == "boolean" %}is{% else %}get{% endif %}{{entity.properties[n].name|capitalize}}()
+    {% elif not entity.properties[n].collectionType %}
+    {{entity.properties[n].type.name|uncapitalize}}Repository.get{{entity.properties[n].type.name|capitalize}}ById({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())
+    {% elif entity.properties[n].collectionType.type == "Set" %}
+    new HashSet<{{entity.properties[n].type.name|capitalize}}>({{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()))
+    {% else %}
+    {{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())
+    {% endif %}
+    {% if n != entity.properties|length - 1 %}, {% endif %}
+    {% endfor %});
+        return {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}}).toDTO();
     }
 
     @Override

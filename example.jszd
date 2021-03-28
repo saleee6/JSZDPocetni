@@ -1,19 +1,14 @@
 entity Human
     [Unique, Length=13, NotNullable]
     jmbg: string
-    [Length=256]
     name: string
-    [Length=256]
     lastname: string
-    [ManyToMany]
-    dogs: Set<Dog>
 
 entity Dog
-    [Length=256]
     name: string
     breed: string
     tramp: bool
     age: int
     weight: float
-    [ManyToMany]
-    humans: List<Human>
+    [ManyToOne]
+    human: Human

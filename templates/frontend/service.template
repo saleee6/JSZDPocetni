@@ -21,5 +21,5 @@ export const update{{entity.name|capitalize}} = ({{entity.name|uncapitalize}}: t
 }
 
 export const delete{{entity.name|capitalize}} = (id: number):Promise<AxiosResponse<any>> => {
-    return axios.delete(path + '/delete?id=' + id);
+    return axios.delete(path + '/delete/' + id);
 }

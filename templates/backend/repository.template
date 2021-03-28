@@ -5,9 +5,10 @@ import com.example.demo.generated.models.{{entity.name|capitalize}};
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.*;
 
 @Repository
 public interface {{entity.name|capitalize}}Repository extends JpaRepository<{{entity.name|capitalize}}, Long> {
     {{entity.name|capitalize}} get{{entity.name|capitalize}}ById(Long id);
+    ArrayList<{{entity.name|capitalize}}> findByIdIn(List<Long> idList);
 }
