@@ -26,7 +26,7 @@ import * as types from "../../types/generated/Types";
 const validationSchema = yup.object({
   {% for property in entity.properties %}
   {% if property.type|isSimpleType %}
-  {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{% if constraint.type=='Length' %}.length({{constraint.value}},'Property {{property.name}} must be {{constraint.value}} characters long'){% endif %}{% endfor %},
+  {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{% if constraint.type=='Length' %}.length({{constraint.value}},'Property {{property.name}} must be {{constraint.value}} characters long'){% elif constraint.type=='NotNullable' %}.required(){% endif %}{% endfor %},
   {% else %}
   {{property.name}}: {% if not property.collectionType %}yup.number(),{% else %}yup.array().of(
     yup.number(),){% endif %}
@@ -61,7 +61,7 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
       id: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.id : 0, 
       {% for property in entity.properties %}
       {% if property.type|isSimpleType %}
-      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if property.type.name == 'string' %}''{% elif property.type.name == 'bool' %}false{% else %}undefined{% endif %},
+      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if property.type.name == 'string' %}''{% elif property.type.name == 'bool' %}false{% else %}0{% endif %},
       {% else %}
       {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if not property.collectionType %}undefined,{% else %}[],{% endif %}
 
