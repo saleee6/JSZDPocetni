@@ -40,24 +40,25 @@ public class {{entity.name|capitalize}}Service implements {{entity.name|capitali
 
     @Override
     public {{entity.name|capitalize}}DTO store{{entity.name|capitalize}}({{entity.name|capitalize}}DTO {{entity.name|uncapitalize}}DTO) {
-        {{entity.name|capitalize}} {{entity.name|uncapitalize}} = new {{entity.name|capitalize}}({{entity.name|uncapitalize}}DTO.getId(), {% for n in range(entity.properties|length) %}
-    {% if entity.properties[n].type|isSimpleType %}
-    {{entity.name|uncapitalize}}DTO.{% if entity.properties[n].type|javatype == "boolean" %}is{% else %}get{% endif %}{{entity.properties[n].name|capitalize}}()
-    {% elif not entity.properties[n].collectionType %}
-    {{entity.properties[n].type.name|uncapitalize}}Repository.get{{entity.properties[n].type.name|capitalize}}ById({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())
-    {% elif entity.properties[n].collectionType.type == "Set" %}
-    new HashSet<{{entity.properties[n].type.name|capitalize}}>({{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()))
-    {% else %}
-    {{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())
-    {% endif %}
-    {% if n != entity.properties|length - 1 %}, {% endif %}
-    {% endfor %});
+        {{entity.name|capitalize}} {{entity.name|uncapitalize}} = new {{entity.name|capitalize}}({{entity.name|uncapitalize}}DTO.getId(), {% for n in range(entity.properties|length) %}{% if entity.properties[n].type|isSimpleType %}{{entity.name|uncapitalize}}DTO.{% if entity.properties[n].type|javatype == "boolean" %}is{% else %}get{% endif %}{{entity.properties[n].name|capitalize}}(){% elif not entity.properties[n].collectionType %}{{entity.properties[n].type.name|uncapitalize}}Repository.get{{entity.properties[n].type.name|capitalize}}ById({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()){% elif entity.properties[n].collectionType.type == "Set" %}new HashSet<{{entity.properties[n].type.name|capitalize}}>({{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())){% else %}{{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()){% endif %}{% if n != entity.properties|length - 1 %}, {% endif %}{% endfor %});
         return {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}}).toDTO();
     }
 
     @Override
     public void delete{{entity.name|capitalize}}(Long id) {
         {{entity.name|capitalize}} {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.get{{entity.name|capitalize}}ById(id);
+
+        {% for property in entity.properties %}{% if property.relation %}{% if property.relation.type == "ManyToMany" %}
+        for({{property.type.name}} var : new ArrayList<>({{entity.name|uncapitalize}}.get{{property.type|return_plural|capitalize}}())) {
+            {{entity.name|uncapitalize}}.get{{property.type|return_plural|capitalize}}().remove(var);
+            {% if property.join_table %}
+            var.get{{entity|return_plural|capitalize}}().remove({{entity.name|uncapitalize}});
+            {% endif %}
+        }
+        {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}});{% endif %}
+        {% endif %}{% endfor %}
+        
+
         {{entity.name|uncapitalize}}Repository.delete({{entity.name|uncapitalize}});
     }
 }
