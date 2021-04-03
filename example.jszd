@@ -1,16 +1,35 @@
-entity Human
+entity Patient
     [Unique, Length=13, NotNullable]
     jmbg: string
+    [NotNullable]
     name: string
+    [NotNullable]
     lastname: string
-    [ManyToMany]
-    dogs: List<Dog>
+    [OneToMany]
+    appointments: List<Appointment>
 
-entity Dog
+entity Doctor
+    [Unique, Length=13, NotNullable]
+    jmbg: string
+    [NotNullable]
     name: string
-    breed: string
-    tramp: bool
-    age: int
-    weight: float
-    [ManyToMany]
-    humans: List<Human>
+    [NotNullable]
+    lastname: string
+    specijalizacija: string
+    [OneToMany]
+    appointments: List<Appointment>
+
+entity Appointment
+    [ManyToOne]
+    patient: Patient
+    [ManyToOne]
+    doctor: Doctor
+    date: string
+    [OneToMany]
+    drugs: List<Drug>
+    
+entity Drug
+    [Unique, Length=5, NotNullable]
+    pid: string
+    [NotNullable]
+    price: float
