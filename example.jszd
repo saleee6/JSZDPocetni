@@ -3,6 +3,8 @@ entity Human
     jmbg: string
     name: string
     lastname: string
+    [ManyToMany]
+    dogs: List<Dog>
 
 entity Dog
     name: string
@@ -10,5 +12,5 @@ entity Dog
     tramp: bool
     age: int
     weight: float
-    [ManyToOne]
-    human: Human
+    [ManyToMany]
+    humans: List<Human>
