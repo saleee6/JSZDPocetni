@@ -9,6 +9,7 @@ from datetime import datetime
 from distutils.dir_util import copy_tree
 import shutil
 
+#region Folders
 this_folder = dirname(__file__)
 base_folder = join(this_folder, 'project')
 generarted_folder = join(this_folder, 'generated')
@@ -44,6 +45,9 @@ generated_frontend_service_folder = join(frontend_service_folder,'generated')
 generated_types_folder = join(types_folder,'generated')
 #endregion
 
+#endregion
+
+#region Custom classes
 class SimpleType(object):
     def __init__(self, parent, name):
         self.parent = parent
@@ -52,7 +56,28 @@ class SimpleType(object):
     def __str__(self):
         return self.name
 
+class CascadeDecorator(object):
+    def __init__(self, parent, type, value):
+        self.parent = parent
+        self.type = type
+        self.value = value
+
+    def __str__(self):
+        return self.type + ' ' + self.value
+
+class FetchDecorator(object):
+    def __init__(self, parent, type, value):
+        self.parent = parent
+        self.type = type
+        self.value = value
+
+    def __str__(self):
+        return self.type + ' ' + self.value
+
+#endregion
+
 #region Validators
+#region RelationProperty validators
 def relation_validator(property):
     if property.relation.type in ['ManyToOne','OneToOne'] and property.collectionType:
         raise TextXSemanticError('Relations ManyToOne and OneToOne can not be of type collection')
@@ -60,6 +85,9 @@ def relation_validator(property):
     if property.relation.type in ['OneToMany','ManyToMany'] and not property.collectionType:
         raise TextXSemanticError('Relations OneToMany and ManyToMany must be of type collection')
 
+#endregion
+
+#region Relation validators
 def decorator_validator(relation):
     if len(relation.decorators) != 0:
         for i in range(len(relation.decorators)):
@@ -67,6 +95,24 @@ def decorator_validator(relation):
                 if relation.decorators[i].type == relation.decorators[j].type:
                     raise TextXSemanticError('Can not have multiple decorators of the same type')
 
+#endregion
+
+#region Property validators
+def property_id_validator(property):
+    if property.name == 'id':
+        raise TextXSemanticError('Property name can not be id')
+
+def property_name_validator(property):
+    if property.name == property.name.capitalize():
+        raise TextXSemanticError('Property name "%s" must be uncapitalized.' % property.name)
+
+def property_validator(property):
+    property_id_validator(property)
+    property_name_validator(property)
+
+#endregion
+
+#region ConstraintProperty validators
 def constraint_validator(property):
     if len(property.constraints) != 0:
         for i in range(len(property.constraints)):
@@ -79,6 +125,126 @@ def length_constraint_validator(property):
         for i in range(len(property.constraints)):
             if property.constraints[i].type == 'Length' and property.type.name != 'string':
                 raise TextXSemanticError('Length constraint can only be set on property of type string')
+
+def constraint_property_validator(property):
+    constraint_validator(property)
+    length_constraint_validator(property)
+
+#endregion
+
+#region Entity validators
+def unique_property_names_validator(entity):
+    properties = []
+    for property in entity.properties:
+        if property.name in properties:
+            raise TextXSemanticError('Property names must be unique within Entity')
+        else:
+            properties.append(property.name)
+
+def entity_name_capitalize_validator(entity):
+    if entity.name != entity.name.capitalize():
+        raise TextXSemanticError('Entity name "%s" must be capitalized.' % entity.name)
+
+def multiple_fields_same_entity_validator(entity):
+    types = []
+    for property in entity.properties:
+        if not isinstance(property.type, SimpleType):
+            if property.type.name in types:
+                raise TextXSemanticError('You can not have multiple properties of the same entity type (This will be enabled in the future versions)')
+            else:
+                types.append(property.type.name)
+
+def entity_property_validator(entity):
+    for property in entity.properties:
+        if not isinstance(property.type, SimpleType):
+            if property.type.name == entity.name:
+                raise TextXSemanticError('You can not have property of the same entity type as its containing entity (This will be enabled in the future versions)')
+
+def one_to_many_many_to_one_validator(entity):
+    for property in entity.properties:
+        if not isinstance(property.type, SimpleType):
+            if hasattr(property, 'relation'):
+                if property.relation.type == 'OneToMany':
+                    for related_property in property.type.properties:
+                        if not isinstance(related_property.type, SimpleType):
+                            if hasattr(related_property, 'relation'):
+                                if related_property.type.name == entity.name:
+                                    if related_property.relation.type != 'ManyToOne':
+                                        raise TextXSemanticError(related_property.name + ' must be of complementary type ManyToOne')
+                                    else:
+                                        contains_cascade = False
+                                        for decorator in property.relation.decorators:
+                                            if decorator.type == 'Cascade':
+                                                contains_cascade = True
+                                                break
+                                        if not contains_cascade:
+                                            property.relation.decorators.append(CascadeDecorator(None, 'Cascade', 'ALL'))
+                                        #property.relation.decorators.append(CascadeDecorator(None, 'mappedBy', related_property.name))
+                elif property.relation.type == 'ManyToOne':
+                    for related_property in property.type.properties:
+                        if not isinstance(related_property.type, SimpleType):
+                            if hasattr(related_property, 'relation'):
+                                if related_property.type.name == entity.name:
+                                    if related_property.relation.type != 'OneToMany':
+                                        raise TextXSemanticError(related_property.name + ' must be of complementary type OneToMany')
+
+def many_to_many_many_to_many_validator(entity):
+    for property in entity.properties:
+        if not isinstance(property.type, SimpleType):
+            if hasattr(property, 'relation'):
+                if property.relation.type == 'ManyToMany':
+                    for related_property in property.type.properties:
+                        if not isinstance(related_property.type, SimpleType):
+                            if hasattr(related_property, 'relation'):
+                                if related_property.type.name == entity.name:
+                                    if related_property.relation.type != 'ManyToMany':
+                                        raise TextXSemanticError(related_property.name + ' must be of complementary type ManyToMany')
+                                    else:
+                                        contains_cascade = False
+                                        contains_fetch = False
+                                        for decorator in property.relation.decorators:
+                                            if decorator.type == 'Cascade':
+                                                if decorator.value == 'PERSIST':
+                                                    contains_cascade = True
+                                                else:
+                                                    raise TextXSemanticError(related_property.name + ' must have Cascade value PERSIST')
+                                            if decorator.type == 'Fetch':
+                                                if decorator.value == 'EAGER':
+                                                    contains_fetch = True
+                                                else:
+                                                    raise TextXSemanticError(related_property.name + ' must have Fetch value EAGER')
+
+                                        if not contains_cascade:
+                                            property.relation.decorators.append(CascadeDecorator(None, 'Cascade', 'PERSIST'))
+                                        if not contains_fetch:
+                                            property.relation.decorators.append(FetchDecorator(None, 'Fetch', 'EAGER'))
+                                        if not hasattr(property, 'join_table'):
+                                            property.join_table = property.name + '_' + related_property.name
+                                            related_property.join_table = property.name + '_' + related_property.name
+                                            property.related_name = related_property.name
+                                            related_property.related_name = property.name
+
+def entity_validator(entity):
+    entity_name_capitalize_validator(entity)
+    unique_property_names_validator(entity)
+    multiple_fields_same_entity_validator(entity)
+    entity_property_validator(entity)
+    one_to_many_many_to_one_validator(entity)
+    many_to_many_many_to_many_validator(entity)
+
+#endregion
+
+#region EntityModel validators
+def unique_entity_name_validator(entityModel):
+    entities = []
+    for entity in entityModel.entities:
+        if entity.name in entities:
+            raise TextXSemanticError('Entity names must be unique')
+        else:
+            entities.append(entity.name)
+
+#endregion
+
 #endregion
 
 def get_entity_mm(debug=False):
@@ -93,14 +259,16 @@ def get_entity_mm(debug=False):
     }
 
     object_processors = {
-        'ComplexRelationProperty' : relation_validator,
-        'SimpleProperty' : constraint_validator,
-        'SimpleProperty' : length_constraint_validator,
-        'Relation' : decorator_validator
+        'EntityModel': unique_entity_name_validator,
+        'Property': property_validator,
+        'RelationProperty' : relation_validator,
+        'ConstraintProperty' : constraint_property_validator,
+        'Relation' : decorator_validator,
+        'Entity': entity_validator,
     }
 
     metamodel = metamodel_from_file(grammar_path,
-                                    classes=[SimpleType],
+                                    classes=[SimpleType, CascadeDecorator, FetchDecorator],
                                     builtins=type_builtins,
                                     debug=debug)
 
@@ -157,10 +325,12 @@ def main(debug=False):
         """
         Check if property is required.
         """
-        for constraint in p.constraints:
-            if constraint.type == 'NotNullable':
-                return True
+        if hasattr(p, 'constraints'):
+            for constraint in p.constraints:
+                if constraint.type == 'NotNullable':
+                    return True
         return False
+
     #endregion
 
     # Create the output folder
@@ -250,6 +420,8 @@ def main(debug=False):
         mkdir(generated_types_folder)
     #endregion
 
+    #region Jinja engines
+    #region Template engines
     # Template engine for backend
     jinja_backend_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(join(template_folder, 'backend')),
@@ -262,6 +434,9 @@ def main(debug=False):
         trim_blocks=True,
         lstrip_blocks=True)
 
+    #endregion
+    
+    #region Register filters
     # Register filters for backend engine
     jinja_backend_env.filters['javatype'] = javatype
     jinja_backend_env.filters['isSimpleType'] = isSimpleType
@@ -275,6 +450,9 @@ def main(debug=False):
     jinja_frontend_env.filters['return_plural'] = return_plural
     jinja_frontend_env.filters['isRequired'] = isRequired
 
+    #endregion
+
+    #region Templates
     # Load the Java templates for backend
     entity_template = jinja_backend_env.get_template('entity.template')
     repository_template = jinja_backend_env.get_template('repository.template')
@@ -291,6 +469,10 @@ def main(debug=False):
     popup_template = jinja_frontend_env.get_template('popup.template')
     service_frontend_template = jinja_frontend_env.get_template('service.template')
 
+    #endregion
+    
+    #endregion
+
     # Export to .dot file for visualization
     dot_folder = join(this_folder, 'dotexport')
     if not os.path.exists(dot_folder):
@@ -303,7 +485,7 @@ def main(debug=False):
     # Kreiranje .dot fajla u odnosu na izgradjeni model
     model_export(entity_model, join(dot_folder, 'example.dot'))
 
-    # Generate Java code
+    # Generate code
     dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     with open(join(generated_components_folder,
                       "NavBar.tsx"), 'w') as f:
@@ -313,7 +495,6 @@ def main(debug=False):
             f.write(types_template.render(entities=entity_model.entities, time=dt_string))
 
     for entity in entity_model.entities:
-        # For each entity generate java file
         with open(join(models_folder,
                       "%s.java" % entity.name.capitalize()), 'w') as f:
             f.write(entity_template.render(entity=entity, time=dt_string))
