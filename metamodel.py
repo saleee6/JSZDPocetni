@@ -179,6 +179,10 @@ def many_to_many_many_to_many_validator(entity):
                                             property.related_name = related_property.name
                                             related_property.related_name = property.name
 
+def plural_validator(plural):
+    if plural.value != plural.value.capitalize():
+        raise TextXSemanticError('Plural value "%s" must be capitalized.' % plural.value)
+
 def entity_validator(entity):
     entity_name_capitalize_validator(entity)
     unique_property_names_validator(entity)
@@ -220,6 +224,7 @@ def get_entity_mm(debug=False):
         'ConstraintProperty' : constraint_property_validator,
         'Relation' : decorator_validator,
         'Entity': entity_validator,
+        'Plural': plural_validator,
     }
 
     metamodel = metamodel_from_file(grammar_path,

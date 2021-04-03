@@ -56,6 +56,54 @@ def isRequired(p):
                 return True
     return False
 
+def initial_value(property):
+    """
+    Return inital value based on property type.
+    """
+    if property.type.name == 'string':
+        return '\'\''
+    elif property.type.name == 'boolean':
+        return 'false'
+    else:
+        return 0
+
+def constraint_type(constraint):
+    """
+    Return constraint type.
+    """
+    if  constraint.type=='Length':
+        return '.length('+ str(constraint.value) + ',\'Property must be ' + str(constraint.value) + ' characters long\')'
+    elif constraint.type=='NotNullable':
+        return '.required(\'Property is required \')'
+    else:
+        return ''
+
+def property_constraint(constraint):
+    """
+    Return constraint for backend.
+    """
+    if constraint.type == 'NotNullable':
+        return 'nullable=false'
+    elif constraint.type == 'Unique':
+        return 'unique=true'
+    else:
+        return constraint.type.lower() + '=' + str(constraint.value)
+
+def property_decorator(decorator):
+    """
+    Return decorator for backend.
+    """
+    return decorator.type.lower() + '=' + decorator.type + 'Type.' + decorator.value
+
+def join_table(property):
+    """
+    Return join expression for property.
+    """
+    if hasattr(property, 'join_table'):
+        return '@JoinTable(name = "' + property.join_table + '", joinColumns=@JoinColumn(name = "' + property.name + '_id"), inverseJoinColumns=@JoinColumn(name = "' + property.related_name + '_id"))'
+    else:
+        return ''
+
 #endregion
 
 def generate_template_and_code(entity_model):
@@ -80,6 +128,9 @@ def generate_template():
     jinja_backend_env.filters['isSimpleType'] = isSimpleType
     jinja_backend_env.filters['uncapitalize'] = uncapitalize
     jinja_backend_env.filters['return_plural'] = return_plural
+    jinja_backend_env.filters['property_constraint'] = property_constraint
+    jinja_backend_env.filters['property_decorator'] = property_decorator
+    jinja_backend_env.filters['join_table'] = join_table
 
     # Register filters for frontend engine
     jinja_frontend_env.filters['jstype'] = jstype
@@ -87,6 +138,8 @@ def generate_template():
     jinja_frontend_env.filters['uncapitalize'] = uncapitalize
     jinja_frontend_env.filters['return_plural'] = return_plural
     jinja_frontend_env.filters['isRequired'] = isRequired
+    jinja_frontend_env.filters['initial_value'] = initial_value
+    jinja_frontend_env.filters['constraint_type'] = constraint_type
 
     return jinja_backend_env, jinja_frontend_env
 
