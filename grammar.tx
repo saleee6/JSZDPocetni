@@ -7,10 +7,10 @@ Entity:
 ;
 
 Property:
-    SimpleProperty | RelationProperty
+    ConstraintProperty | RelationProperty
 ;
 
-SimpleProperty:
+ConstraintProperty:
     ('[' constraints+=Constraint[','] ']')? name=ID ':' type=[SimpleType]
 ;
 
@@ -19,14 +19,6 @@ Constraint:
 ;
 
 RelationProperty:
-    SimpleRelationProperty | ComplexRelationProperty
-;
-
-SimpleRelationProperty:
-    name=ID ':' type=[Entity]
-;
-
-ComplexRelationProperty:
     '[' relation=Relation ']' name=ID ':' ((collectionType=CollectionType '<' type=[Entity] '>') | (type=[Entity]))
 ;
 
