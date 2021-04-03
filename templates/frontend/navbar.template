@@ -4,7 +4,7 @@ import { AppBar, makeStyles, Tab, Tabs } from "@material-ui/core";
 import { Link, Route, useLocation, Switch } from "react-router-dom";
 import Home from "../Home/Home";
 {% for entity in entities %}
-import {{entity|return_plural|capitalize}} from "../../containers/generated/{{entity|return_plural|capitalize}}"
+import {{entity|return_plural}} from "../../containers/generated/{{entity|return_plural}}"
 {% endfor %}
 
 const useStyles = makeStyles((theme) => ({
@@ -29,14 +29,14 @@ const NavBar: React.VFC = () => {
           >
             <Tab label="Home" component={Link} to="/" value="/" />
             {% for entity in entities %}
-            <Tab label="{{entity|return_plural|capitalize}}" component={Link} to="/{{entity|return_plural|uncapitalize}}" value="/{{entity|return_plural|uncapitalize}}" />
+            <Tab label="{{entity|return_plural}}" component={Link} to="/{{entity|return_plural|uncapitalize}}" value="/{{entity|return_plural|uncapitalize}}" />
             {% endfor %}
           </Tabs>
         </AppBar>
         <Switch>
           <Route exact path="/" component={Home} />
           {% for entity in entities %}
-          <Route path="/{{entity|return_plural|uncapitalize}}" component={ {{entity|return_plural|capitalize}} } />
+          <Route path="/{{entity|return_plural|uncapitalize}}" component={ {{entity|return_plural}} } />
           {% endfor %}
         </Switch>
       </div>

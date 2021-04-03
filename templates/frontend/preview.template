@@ -13,12 +13,12 @@ import {
   TableRow,
 } from "@material-ui/core";
 import React, { Fragment, useEffect, useState, VFC } from "react";
-import {{entity.name|capitalize}}Popup from "../../components/generated/{{entity.name|capitalize}}Popup";
+import {{entity.name}}Popup from "../../components/generated/{{entity.name}}Popup";
 import * as types from "../../types/generated/Types";
-import { getAll{{entity|return_plural|capitalize}}, add{{entity.name|capitalize}}, update{{entity.name|capitalize}}, delete{{entity.name|capitalize}} } from "../../services/generated/{{entity.name|capitalize}}Service";
+import { getAll{{entity|return_plural}}, add{{entity.name}}, update{{entity.name}}, delete{{entity.name}} } from "../../services/generated/{{entity.name}}Service";
 {% for property in entity.properties %}
 {% if not property.type|isSimpleType %}
-import { getAll{{property.type|return_plural|capitalize}} } from "../../services/generated/{{property.type.name|capitalize}}Service";
+import { getAll{{property.type|return_plural}} } from "../../services/generated/{{property.type.name}}Service";
 {% endif %}
 {% endfor %}
 
@@ -29,15 +29,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const {{entity|return_plural|capitalize}}: VFC = () => {
-  const [{{entity|return_plural|uncapitalize}}, set{{entity|return_plural|capitalize}}] = useState<types.{{entity.name|capitalize}}[]>([]);
-  const [{{entity.name|uncapitalize}}, set{{entity.name|capitalize}}] = useState<types.{{entity.name|capitalize}} | undefined>();
+const {{entity|return_plural}}: VFC = () => {
+  const [{{entity|return_plural|uncapitalize}}, set{{entity|return_plural}}] = useState<types.{{entity.name}}[]>([]);
+  const [{{entity.name|uncapitalize}}, set{{entity.name}}] = useState<types.{{entity.name}} | undefined>();
   const [openedAdd, setOpenedAdd] = useState(false);
   const [openedEdit, setOpenedEdit] = useState(false);
   const [editedList, setEditedList] = useState(false);
   {% for property in entity.properties %}
   {% if not property.type|isSimpleType %}
-  const [{{property.type|return_plural|uncapitalize}}, set{{property.type|return_plural|capitalize}}] = useState<types.{{property.type.name|capitalize}}[]>();
+  const [{{property.type|return_plural|uncapitalize}}, set{{property.type|return_plural}}] = useState<types.{{property.type.name}}[]>();
   {% endif %}
   {% endfor %}
 
@@ -51,8 +51,8 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
     setOpenedEdit(false);
   };
 
-  const handleOnAddSubmit = (value: types.{{entity.name|capitalize}}) => {
-    add{{entity.name|capitalize}}(value).then(
+  const handleOnAddSubmit = (value: types.{{entity.name}}) => {
+    add{{entity.name}}(value).then(
       response => {
         setEditedList(!editedList);
         setOpenedAdd(false);
@@ -63,8 +63,8 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
     )
   };
 
-  const handleOnEditSubmit = (value: types.{{entity.name|capitalize}}) => {
-    update{{entity.name|capitalize}}(value).then(
+  const handleOnEditSubmit = (value: types.{{entity.name}}) => {
+    update{{entity.name}}(value).then(
       response => {
         setEditedList(!editedList);
         setOpenedEdit(false);
@@ -76,7 +76,7 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   };
 
   const handleOnDelete = (id: number) => {
-    delete{{entity.name|capitalize}}(id).then(
+    delete{{entity.name}}(id).then(
       response => {
         setEditedList(!editedList);
       },
@@ -86,8 +86,8 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
     )
   };
 
-  const handleOnEdit = (value: types.{{entity.name|capitalize}}) => {
-    set{{entity.name|capitalize}}(value);
+  const handleOnEdit = (value: types.{{entity.name}}) => {
+    set{{entity.name}}(value);
     setOpenedEdit(true);
   };
 
@@ -96,9 +96,9 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   };
 
   useEffect(() => {
-    getAll{{entity|return_plural|capitalize}}().then(
+    getAll{{entity|return_plural}}().then(
       response => {
-        set{{entity|return_plural|capitalize}}(response.data);
+        set{{entity|return_plural}}(response.data);
       },
       error => {
         console.log(error);
@@ -106,9 +106,9 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
     )
     {% for property in entity.properties %}
     {% if not property.type|isSimpleType %}
-    getAll{{property.type|return_plural|capitalize}}().then(
+    getAll{{property.type|return_plural}}().then(
       response => {
-        set{{property.type|return_plural|capitalize}}(response.data);
+        set{{property.type|return_plural}}(response.data);
       },
       error => {
         console.log(error);
@@ -125,7 +125,7 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   {{property.type|return_plural|uncapitalize}} !== undefined &&
   {% endif %}
   {% endfor %}(
-        <{{entity.name|capitalize}}Popup
+        <{{entity.name}}Popup
           opened={openedAdd}
           handleClose={handleCloseAdd}
           handleOnSubmit={handleOnAddSubmit}
@@ -142,7 +142,7 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   {{property.type|return_plural|uncapitalize}} !== undefined &&
   {% endif %}
   {% endfor %}(
-        <{{entity.name|capitalize}}Popup
+        <{{entity.name}}Popup
           opened={openedEdit}
           handleClose={handleCloseEdit}
           handleOnSubmit={handleOnEditSubmit}
@@ -156,7 +156,7 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
       )}
       <Card className={classes.card}>
         <CardHeader
-          title="{{entity|return_plural|capitalize}}"
+          title="{{entity|return_plural}}"
           action={<Button onClick={() => handleOnAdd()}>Add</Button>}
         />
         <CardContent>
@@ -199,4 +199,4 @@ const {{entity|return_plural|capitalize}}: VFC = () => {
   );
 };
 
-export default {{entity|return_plural|capitalize}};
+export default {{entity|return_plural}};

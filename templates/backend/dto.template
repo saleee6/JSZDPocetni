@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{entity.name|capitalize}}DTO {
+public class {{entity.name}}DTO {
     private Long id;
     {% for property in entity.properties %}
     {% if property.type|isSimpleType %}

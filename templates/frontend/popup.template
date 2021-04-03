@@ -20,17 +20,17 @@ import {
 import { useFormik } from "formik";
 import React, { VFC } from "react";
 import * as yup from "yup";
-import { {{entity.name|capitalize}}PopupProps } from "../../interfaces/generated/I{{entity.name|capitalize}}Popup";
+import { {{entity.name}}PopupProps } from "../../interfaces/generated/I{{entity.name}}Popup";
 import * as types from "../../types/generated/Types";
 
 const validationSchema = yup.object({
   {% for property in entity.properties %}
   {% if property.type|isSimpleType %}
-  {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{% if constraint.type=='Length' %}.length({{constraint.value}},'Property {{property.name}} must be {{constraint.value}} characters long'){% elif constraint.type=='NotNullable' %}.required(){% endif %}{% endfor %},
-  {% else %}
+  {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{{constraint|constraint_type}}{% endfor %},{% else %}
   {{property.name}}: {% if not property.collectionType %}yup.number(),{% else %}yup.array().of(
     yup.number(),){% endif %}
   {% endif %}
+
   {% endfor %}
 });
 
@@ -45,7 +45,7 @@ const MenuProps = {
   },
 };
 
-const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps> = ({
+const {{entity.name}}Popup: VFC<{{entity.name}}PopupProps> = ({
   opened,
   handleClose,
   handleOnSubmit,
@@ -61,10 +61,9 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
       id: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.id : 0, 
       {% for property in entity.properties %}
       {% if property.type|isSimpleType %}
-      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if property.type.name == 'string' %}''{% elif property.type.name == 'bool' %}false{% else %}0{% endif %},
+      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {{property|initial_value}},
       {% else %}
-      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if not property.collectionType %}undefined,{% else %}[],{% endif %}
-
+      {{property.name}}: {{entity.name|uncapitalize}} ? {{entity.name|uncapitalize}}.{{property.name}} : {% if not property.collectionType %}undefined{% else %}[]{% endif %},
       {% endif %}
       {% endfor %}
     },
@@ -76,7 +75,7 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
   return (
     <Dialog open={opened} onClose={() => handleClose()} scroll={"paper"}>
       <form onSubmit={formik.handleSubmit}>
-        <DialogTitle>{{entity.name|capitalize}}</DialogTitle>
+        <DialogTitle>{{entity.name}}</DialogTitle>
         <DialogContent>
         {% for property in entity.properties %}
         {% if property.type | isSimpleType %}
@@ -167,4 +166,4 @@ const {{entity.name|capitalize}}Popup: VFC<{{entity.name|capitalize}}PopupProps>
   );
 };
 
-export default {{entity.name|capitalize}}Popup;
+export default {{entity.name}}Popup;

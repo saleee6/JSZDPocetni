@@ -2,8 +2,8 @@
 package com.example.demo.generated.controllers;
 
 import com.example.demo.generated.dtos.*;
-import com.example.demo.generated.services.{{entity.name|capitalize}}Service;
-import com.example.demo.generated.models.{{entity.name|capitalize}};
+import com.example.demo.generated.services.{{entity.name}}Service;
+import com.example.demo.generated.models.{{entity.name}};
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,34 +12,34 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/api/{{entity|return_plural|uncapitalize}}")
-public class {{entity|return_plural|capitalize}}Controller {
+public class {{entity|return_plural}}Controller {
 
     @Autowired
-    private {{entity.name|capitalize}}Service {{entity.name|uncapitalize}}Service;
+    private {{entity.name}}Service {{entity.name|uncapitalize}}Service;
 
     @GetMapping(value="/get/{id}", produces = "application/json")
-    public ResponseEntity<?> get{{entity.name|capitalize}}(@PathVariable Long id) {
-        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.get{{entity.name|capitalize}}(id), HttpStatus.OK);
+    public ResponseEntity<?> get{{entity.name}}(@PathVariable Long id) {
+        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.get{{entity.name}}(id), HttpStatus.OK);
     }
 
     @GetMapping(value="/getAll", produces = "application/json")
-    public ResponseEntity<?> getAll{{entity|return_plural|capitalize}}() {
-        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.getAll{{entity|return_plural|capitalize}}(), HttpStatus.OK);
+    public ResponseEntity<?> getAll{{entity|return_plural}}() {
+        return new ResponseEntity<>({{entity.name|uncapitalize}}Service.getAll{{entity|return_plural}}(), HttpStatus.OK);
     }
 
     @PostMapping(value="/add", consumes = "application/json")
-    public ResponseEntity<?> post{{entity.name|capitalize}}(@RequestBody {{entity.name|capitalize}}DTO {{entity.name|uncapitalize}}DTO) {
-        return new ResponseEntity<{{entity.name|capitalize}}DTO>({{entity.name|uncapitalize}}Service.store{{entity.name|capitalize}}({{entity.name|uncapitalize}}DTO), HttpStatus.CREATED);
+    public ResponseEntity<?> post{{entity.name}}(@RequestBody {{entity.name}}DTO {{entity.name|uncapitalize}}DTO) {
+        return new ResponseEntity<{{entity.name}}DTO>({{entity.name|uncapitalize}}Service.store{{entity.name}}({{entity.name|uncapitalize}}DTO), HttpStatus.CREATED);
     }
 
     @PutMapping(value="/update", consumes = "application/json")
-    public ResponseEntity<?> put{{entity.name|capitalize}}(@RequestBody {{entity.name|capitalize}}DTO {{entity.name|uncapitalize}}DTO) {
-        return new ResponseEntity<{{entity.name|capitalize}}DTO>({{entity.name|uncapitalize}}Service.store{{entity.name|capitalize}}({{entity.name|uncapitalize}}DTO), HttpStatus.OK);
+    public ResponseEntity<?> put{{entity.name}}(@RequestBody {{entity.name}}DTO {{entity.name|uncapitalize}}DTO) {
+        return new ResponseEntity<{{entity.name}}DTO>({{entity.name|uncapitalize}}Service.store{{entity.name}}({{entity.name|uncapitalize}}DTO), HttpStatus.OK);
     }
 
     @DeleteMapping(value="/delete/{id}")
-    public ResponseEntity<?> delete{{entity.name|capitalize}}(@PathVariable Long id) {
-        {{entity.name|uncapitalize}}Service.delete{{entity.name|capitalize}}(id);
+    public ResponseEntity<?> delete{{entity.name}}(@PathVariable Long id) {
+        {{entity.name|uncapitalize}}Service.delete{{entity.name}}(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
