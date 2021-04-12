@@ -1,0 +1,3 @@
+backend_folder = backend_base_folder = backend_interface_folder = controllers_folder = repositories_folder = backend_service_folder = models_folder = dtos_folder = ''
+frontend_folder = frontend_base_folder = frontend_interface_folder = components_folder = containers_folder = frontend_service_folder = types_folder = ''
+generated_frontend_interface_folder = generated_components_folder = generated_containers_folder = generated_frontend_service_folder = generated_types_folder = ''
