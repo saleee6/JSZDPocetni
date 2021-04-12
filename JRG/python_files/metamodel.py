@@ -1,6 +1,6 @@
 from textx import metamodel_from_file, TextXSemanticError
 from os.path import dirname, join
-from folder_structure import this_folder, grammar_path
+from JRG.python_files.folder_structure import this_folder, grammar_path
 
 #region Custom classes
 class SimpleType(object):
