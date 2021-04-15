@@ -15,7 +15,7 @@ entity Doctor
     name: string
     [NotNullable]
     lastname: string
-    specijalizacija: string
+    specialization: string
     [OneToMany]
     appointments: List<Appointment>
 
