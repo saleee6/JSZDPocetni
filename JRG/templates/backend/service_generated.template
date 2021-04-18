@@ -40,22 +40,96 @@ public class {{entity.name}}GeneratedService implements {{entity.name}}Generated
 
     @Override
     public {{entity.name}}DTO store{{entity.name}}({{entity.name}}DTO {{entity.name|uncapitalize}}DTO) {
-        {{entity.name}} {{entity.name|uncapitalize}} = new {{entity.name}}({{entity.name|uncapitalize}}DTO.getId(), {% for n in range(entity.properties|length) %}{% if entity.properties[n].type|isSimpleType %}{{entity.name|uncapitalize}}DTO.{% if entity.properties[n].type|javatype == "boolean" %}is{% else %}get{% endif %}{{entity.properties[n].name|capitalize}}(){% elif not entity.properties[n].collectionType %}{{entity.properties[n].type.name|uncapitalize}}Repository.get{{entity.properties[n].type.name}}ById({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()){% elif entity.properties[n].collectionType.type == "Set" %}new HashSet<{{entity.properties[n].type.name}}>({{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}())){% else %}{{entity.properties[n].type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()){% endif %}{% if n != entity.properties|length - 1 %}, {% endif %}{% endfor %});
-        return {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}}).toDTO();
+        {% if entity|hasPairedRelationProperty %}
+        if ({{entity.name|uncapitalize}}DTO.getId() != 0) {
+            {{entity.name}}DTO temp{{entity.name}} = get{{entity.name}}({{entity.name|uncapitalize}}DTO.getId());
+
+            {% for property in entity.properties %}
+            {% if property.oneToOneName %}
+            if ((temp{{entity.name}}.get{{property.name|capitalize}}() != 0) && (temp{{entity.name}}.get{{property.name|capitalize}}() != {{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}())) {
+                {{property.type.name}} {{property.type.name|uncapitalize}} = {{property.type.name|uncapitalize}}Repository.get{{property.type.name}}ById(temp{{entity.name}}.get{{property.name|capitalize}}());
+                {{property.type.name|uncapitalize}}.set{{property.oneToOneName|capitalize}}(null);
+                {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+            }
+            {% elif property|hasMappedBy %}
+            for(Long {{property.type.name|uncapitalize}}Id: temp{{entity.name}}.get{{property.name|capitalize}}()) {
+                if (!{{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}().contains({{property.type.name|uncapitalize}}Id)) {
+                    {{property.type.name}} {{property.type.name|uncapitalize}} = {{property.type.name|uncapitalize}}Repository.get{{property.type.name}}ById({{property.type.name|uncapitalize}}Id);
+                    {{property.type.name|uncapitalize}}.set{{property|mappedByValue|capitalize}}(null);
+                    {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+                }
+            }
+            {% endif %}
+            {% endfor %}
+        }{% endif %}
+
+        {% for property in entity.properties %}
+        {% if property.oneToOneName and not property|hasMappedBy %}
+        if({{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}() != null){
+            {{entity.name}} temp{{entity.name}} = {{entity.name|uncapitalize}}Repository.find{{entity.name}}By{{property.type.name|capitalize}}Id({{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}());
+            if(temp{{entity.name}} != null){
+                temp{{entity.name}}.set{{property.name|capitalize}}(null);
+                {{entity.name|uncapitalize}}Repository.save(temp{{entity.name}});
+            }
+        }
+        {% endif %}
+        {% endfor %}
+
+        {% for property in entity.properties %}
+        {% if property.collectionType %}
+        {% if property.collectionType.type == "Set" %}
+        HashSet<{{property.type.name}}> {{property.name}} = new HashSet<{{property.type.name}}>({{property.type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}()));
+        {% else %}
+        ArrayList<{{property.type.name}}> {{property.name}} = {{property.type.name|uncapitalize}}Repository.findByIdIn({{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}());
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+
+        {{entity.name}} {{entity.name|uncapitalize}} = new {{entity.name}}({{entity.name|uncapitalize}}DTO.getId(), {% for n in range(entity.properties|length) %}{% if entity.properties[n].type|isSimpleType %}{{entity.name|uncapitalize}}DTO.{% if entity.properties[n].type|javatype == "boolean" %}is{% else %}get{% endif %}{{entity.properties[n].name|capitalize}}(){% elif not entity.properties[n].collectionType %}{{entity.properties[n].type.name|uncapitalize}}Repository.get{{entity.properties[n].type.name}}ById({{entity.name|uncapitalize}}DTO.get{{entity.properties[n].name|capitalize}}()){% else %}{{entity.properties[n].name}}{% endif %}{% if n != entity.properties|length - 1 %}, {% endif %}{% endfor %});
+        {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}});
+
+        {% for property in entity.properties %}
+        {% if property.collectionType and property|hasMappedBy %}
+        for({{property.type.name}} {{property.type.name|uncapitalize}}: {{property.name}}){
+            {{property.type.name|uncapitalize}}.set{{property|mappedByValue|capitalize}}({{entity.name|uncapitalize}});
+            {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+        }
+        {% elif property.oneToOneName %}
+        {{property.type.name}} {{property.type.name|uncapitalize}} = {{property.type.name|uncapitalize}}Repository.get{{property.type.name}}ById({{entity.name|uncapitalize}}DTO.get{{property.name|capitalize}}());
+        if ({{property.type.name|uncapitalize}} != null) {
+            {{property.type.name|uncapitalize}}.set{{property.oneToOneName|capitalize}}({{entity.name|uncapitalize}});
+            {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+        }
+        {% endif %}
+        {% endfor %}
+        
+        return {{entity.name|uncapitalize}}.toDTO();
     }
 
     @Override
     public void delete{{entity.name}}(Long id) {
+
         {{entity.name}} {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.get{{entity.name}}ById(id);
         {% for property in entity.properties %}{% if property.relation %}{% if property.relation.type == "ManyToMany" %}
         
-        for({{property.type.name}} var : new ArrayList<>({{entity.name|uncapitalize}}.get{{property.type|return_plural}}())) {
+        for({{property.type.name}} var : new ArrayList<>({{entity.name|uncapitalize}}.get{{property.name}}())) {
             {{entity.name|uncapitalize}}.get{{property.type|return_plural}}().remove(var);
             {% if property.join_table %}
             var.get{{entity|return_plural}}().remove({{entity.name|uncapitalize}});
             {% endif %}
         }
-        {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}});{% endif %}
+        {{entity.name|uncapitalize}} = {{entity.name|uncapitalize}}Repository.save({{entity.name|uncapitalize}});
+        {% elif property.relation.type == "OneToMany" and property|hasMappedBy %}
+        List<{{property.type.name}}> {{property.name}} = {{entity.name|uncapitalize}}.get{{property.name|capitalize}}();
+        for({{property.type.name}} {{property.type.name|uncapitalize}}: {{property.name}}){
+            {{property.type.name|uncapitalize}}.set{{property|mappedByValue|capitalize}}(null);
+            {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+        }
+        {% elif property.oneToOneName %}
+        {{property.type.name}} {{property.type.name|uncapitalize}} = {{entity.name|uncapitalize}}.get{{property.name|capitalize}}();
+        {{property.type.name|uncapitalize}}.set{{property.oneToOneName|capitalize}}(null);
+        {{property.type.name|uncapitalize}}Repository.save({{property.type.name|uncapitalize}});
+        {% endif %}
         {% endif %}{% endfor %}
         
         {{entity.name|uncapitalize}}Repository.delete({{entity.name|uncapitalize}});

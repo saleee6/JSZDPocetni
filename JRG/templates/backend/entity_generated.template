@@ -21,8 +21,7 @@ public class {{entity.name}}Generated {
   {% endif %}
   {% else %}
   {% if property.relation %}  @{{property.relation.type}}{% if property.relation.decorators %}({% for n in range(property.relation.decorators | length)%}{{property.relation.decorators[n]|property_decorator}}{% if n != (property.relation.decorators | length - 1)%}, {% endif %}
-  {% endfor %})
-  {% endif %}
+  {% endfor %}){% endif %}
   {{property|join_table}}{% endif %} 
   {% endif %}
   private {% if property.collectionType %}{{property.collectionType.type}}<{% endif %}{{property.type|javatype}}{% if property.collectionType %}>{% endif %} {{property.name}};
