@@ -93,7 +93,10 @@ def property_decorator(decorator):
     """
     Return decorator for backend.
     """
-    return decorator.type.lower() + '=' + decorator.type + 'Type.' + decorator.value
+    if decorator.type == "mappedBy":
+        return "mappedBy=\"" + decorator.value + "\""
+    else:
+        return decorator.type.lower() + '=' + decorator.type + 'Type.' + decorator.value
 
 def join_table(property):
     """
@@ -103,6 +106,39 @@ def join_table(property):
         return '@JoinTable(name = "' + property.join_table + '", joinColumns=@JoinColumn(name = "' + property.name + '_id"), inverseJoinColumns=@JoinColumn(name = "' + property.related_name + '_id"))'
     else:
         return ''
+
+def hasMappedBy(property):
+    """
+    Check if property has mappedBy decorator.
+    """
+    if hasattr(property, 'collectionType'):
+        if hasattr(property.relation, 'decorators'):
+            for decorator in property.relation.decorators:
+                if decorator.type == 'mappedBy':
+                    return True
+    return False
+
+def mappedByValue(property):
+    """
+    Return mappedBy value for property.
+    """
+    for decorator in property.relation.decorators:
+        if decorator.type == 'mappedBy':
+            return decorator.value
+
+def hasPairedRelationProperty(entity):
+    """
+    Check if entity has property with mappedBy decorator.
+    """
+    for property in entity.properties:
+        if hasattr(property, 'oneToOneName'):
+            return True
+        if hasattr(property, 'collectionType'):
+            if hasattr(property.relation, 'decorators'):
+                for decorator in property.relation.decorators:
+                    if decorator.type == 'mappedBy':
+                        return True
+    return False
 
 #endregion
 
@@ -131,6 +167,9 @@ def generate_template():
     jinja_backend_env.filters['property_constraint'] = property_constraint
     jinja_backend_env.filters['property_decorator'] = property_decorator
     jinja_backend_env.filters['join_table'] = join_table
+    jinja_backend_env.filters['hasMappedBy'] = hasMappedBy
+    jinja_backend_env.filters['mappedByValue'] = mappedByValue
+    jinja_backend_env.filters['hasPairedRelationProperty'] = hasPairedRelationProperty
 
     # Register filters for frontend engine
     jinja_frontend_env.filters['jstype'] = jstype
