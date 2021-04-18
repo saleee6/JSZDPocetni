@@ -127,14 +127,7 @@ def one_to_many_many_to_one_validator(entity):
                                     if related_property.relation.type != 'ManyToOne':
                                         raise TextXSemanticError(related_property.name + ' must be of complementary type ManyToOne')
                                     else:
-                                        contains_cascade = False
-                                        for decorator in property.relation.decorators:
-                                            if decorator.type == 'Cascade':
-                                                contains_cascade = True
-                                                break
-                                        if not contains_cascade:
-                                            property.relation.decorators.append(CascadeDecorator(None, 'Cascade', 'ALL'))
-                                        #property.relation.decorators.append(CascadeDecorator(None, 'mappedBy', related_property.name))
+                                        property.relation.decorators.append(CascadeDecorator(None, 'mappedBy', related_property.name))
                 elif property.relation.type == 'ManyToOne':
                     for related_property in property.type.properties:
                         if not isinstance(related_property.type, SimpleType):
@@ -179,6 +172,23 @@ def many_to_many_many_to_many_validator(entity):
                                             property.related_name = related_property.name
                                             related_property.related_name = property.name
 
+def one_to_one_one_to_one_validator(entity):
+    for property in entity.properties:
+        if not isinstance(property.type, SimpleType):
+            if hasattr(property, 'relation'):
+                if property.relation.type == 'OneToOne':
+                    for related_property in property.type.properties:
+                        if not isinstance(related_property.type, SimpleType):
+                            if hasattr(related_property, 'relation'):
+                                if related_property.type.name == entity.name:
+                                    if related_property.relation.type != 'OneToOne':
+                                        raise TextXSemanticError(related_property.name + ' must be of complementary type OneToOne')
+                                    else:
+                                        if not hasattr(property, 'oneToOneName'):
+                                            property.oneToOneName = related_property.name
+                                            related_property.oneToOneName = property.name
+                                            property.relation.decorators.append(CascadeDecorator(None, 'mappedBy', related_property.name))
+
 def plural_validator(plural):
     if plural.value != plural.value.capitalize():
         raise TextXSemanticError('Plural value "%s" must be capitalized.' % plural.value)
@@ -190,6 +200,7 @@ def entity_validator(entity):
     entity_property_validator(entity)
     one_to_many_many_to_one_validator(entity)
     many_to_many_many_to_many_validator(entity)
+    one_to_one_one_to_one_validator(entity)
 
 #endregion
 
