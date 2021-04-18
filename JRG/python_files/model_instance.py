@@ -62,7 +62,7 @@ def initial_value(property):
     """
     if property.type.name == 'string':
         return '\'\''
-    elif property.type.name == 'boolean':
+    elif property.type.name == 'bool':
         return 'false'
     else:
         return 0
