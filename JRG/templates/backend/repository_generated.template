@@ -13,7 +13,7 @@ public interface {{entity.name}}GeneratedRepository extends JpaRepository<{{enti
     ArrayList<{{entity.name}}> findByIdIn(List<Long> idList);
     {% for property in entity.properties %}
     {% if property.oneToOneName and not property|hasMappedBy %}
-    {{entity.name}} find{{entity.name}}By{{property.type.name|capitalize}}Id(Long id);
+    {{entity.name}} find{{entity.name}}By{{property.name|capitalize}}Id(Long id);
     {% endif %}
     {% endfor %}
 }

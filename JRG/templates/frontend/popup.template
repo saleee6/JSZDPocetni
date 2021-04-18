@@ -28,7 +28,7 @@ const validationSchema = yup.object({
   {% if property.type|isSimpleType %}
   {{property.name}}: yup.{{property.type|jstype}}(){% if property.type.name == "int" %}.integer(){% endif %}{% for constraint in property.constraints %}{{constraint|constraint_type}}{% endfor %},{% else %}
   {{property.name}}: {% if not property.collectionType %}yup.number(),{% else %}yup.array().of(
-    yup.number(),){% endif %}
+    yup.number(),),{% endif %}
   {% endif %}
 
   {% endfor %}

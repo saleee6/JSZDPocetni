@@ -6,7 +6,7 @@ import com.example.demo.generated.dtos.{{entity.name}}GeneratedDTO;
 import java.util.List;
 
 public class {{entity.name}}DTO extends {{entity.name}}GeneratedDTO {
-    public {{entity.name}}DTO(Long id, {% for n in range(entity.properties|length) %}{% if entity.properties[n].type|isSimpleType %}{{entity.properties[n].type|javatype}} {{entity.properties[n].name}}{% elif not entity.properties[n].collectionType %}Long {{entity.properties[n].name}}{% else %}{{entity.properties[n].collectionType.type}}<Long> {{entity.properties[n].name}}{% endif %}{% if n != entity.properties|length - 1 %}, {% endif %}{% endfor %}) {
+    public {{entity.name}}DTO(Long id, {% for n in range(entity.properties|length) %}{% if entity.properties[n].type|isSimpleType %}{{entity.properties[n].type|javatype}} {{entity.properties[n].name}}{% elif not entity.properties[n].collectionType %}Long {{entity.properties[n].name}}{% else %}List<Long> {{entity.properties[n].name}}{% endif %}{% if n != entity.properties|length - 1 %}, {% endif %}{% endfor %}) {
         super(id, {% for n in range(entity.properties|length) %}{{entity.properties[n].name}}{% if n < entity.properties|length - 1 %}, {% endif %} {% endfor %});
     }
 
